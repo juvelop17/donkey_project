@@ -53,8 +53,9 @@ class ImuTopicPublisher:
 
         self.FIFO_count_list = list()
 
+        self.frame_name = 'imu_publisher'
         self.pub = rospy.Publisher('/imu_topic', Imu, queue_size=10)
-        rospy.init_node('imu_publisher', anonymous=True)
+        rospy.init_node(self.frame_name, anonymous=True)
         self.rate = rospy.Rate(10)  # 10hz
 
     def setOffsets(self):
