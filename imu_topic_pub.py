@@ -72,27 +72,28 @@ class ImuTopicPublisher:
         self.enable_debug_output = True
 
     def createImuMsg(self, quat, accel, gyro):
-        imu_msg = Imu()
+        imuMsg = Imu()
 
-        imu_msg.orientation.x = quat.x
-        imu_msg.orientation.y = quat.y
-        imu_msg.orientation.z = quat.z
-        imu_msg.orientation.w = quat.w
+        imuMsg.orientation.x = quat.x
+        imuMsg.orientation.y = quat.y
+        imuMsg.orientation.z = quat.z
+        imuMsg.orientation.w = quat.w
 
-        imu_msg.linear_acceleration.x = accel.x
-        imu_msg.linear_acceleration.y = accel.y
-        imu_msg.linear_acceleration.z = accel.z
+        imuMsg.linear_acceleration.x = accel.x
+        imuMsg.linear_acceleration.y = accel.y
+        imuMsg.linear_acceleration.z = accel.z
 
-        imu_msg.angular_velocity.x = gyro[0]
-        imu_msg.angular_velocity.y = gyro[1]
-        imu_msg.angular_velocity.z = gyro[2]
+        imuMsg.angular_velocity.x = gyro[0]
+        imuMsg.angular_velocity.y = gyro[1]
+        imuMsg.angular_velocity.z = gyro[2]
 
-        imu_msg.header.stamp = rospy.Time.now()
-        imu_msg.header.frame_id = self.frame_name
-        imu_msg.header.seq = self.seq
+        imuMsg.header.stamp = rospy.Time.now()
+        imuMsg.header.frame_id = self.frame_name
+        imuMsg.header.seq = self.seq
 
-        self.pub_imu.publish(self.imu_msg)
         self.seq += 1
+
+        return imuMsg
 
     def publishImuMsg(self, imuMsg):
         self.pub.publish(imuMsg)
