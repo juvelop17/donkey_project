@@ -1,0 +1,115 @@
+
+다음은 Raspberry Pi의 최신 배포 버전인 Raspbian Stretch 에 ROS Kinetic을 설치하는 방법을 정리한 것이다.
+Raspbian을 설치하고 기본으로 설정된 apt-get을 통해 Binary설치를 하려고 하면 구버전의 Ros 패키지가 설치되어 최신 버전으로 업데이트가 불가능하다.
+Catkin 패키지를 설치하려고 해도 여러가지 의존성 문제가 발생하므로 좀 번거롭더라도 소스에서 빌드하는것이 추천된다.
+
+주요 내용은 다음 페이지를 참조하였다.
+http://wiki.ros.org/ROSberryPi/Installing%20ROS%20Kinetic%20on%20the%20Raspberry%20Pi
+
+1. 들어가기 앞서
+
+라즈비안을 설치하면 기본 스왑이 100MB로 설정되어 있다. ROS빌드 도중 스왑 부족으로 중단될 수 있으므로 이것을 1024MB까지 늘려주는 작업이 필요하다.
+/etc/dphys-swapfile 파일을 에디터로 열고
+CONF_SWAPSIZE= 의 값을 1024로 변경한다.
+재부팅 후
+ $ free -m 을 실행하면 다음과 같이 Swap이 증가되어 있음을 확인할 수 있다.
+              total        used        free      shared  buff/cache   available
+Mem:            927          89         565           1         271         780
+Swap:          1023          57         966
+
+2. ROS Repository설정하기
+먼저 apt key 를 업데이트 리스트에 저장해야 하는데 dirmngr 패키지가 필요하므로 apt-get으로 설치한다.
+
+이제 Repository 에 ROS Package리스트를 추가한다.
+
+sudo apt-get install dirmngr
+
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install -y python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential cmake
+sudo rosdep init
+rosdep update
+
+
+3. 설치하기
+3.1 Catkin Workspace 만들기
+
+mkdir -p ~/ros_catkin_ws
+cd ~/ros_catkin_ws
+
+추천하는 방식대로 ROS-Comm을 설치한다.
+
+rosinstall_generator ros_comm --rosdistro kinetic --deps --wet-only --tar > kinetic-ros_comm-wet.rosinstall
+wstool init src kinetic-ros_comm-wet.rosinstall
+
+3.2 의존성 해결
+mkdir -p ~/ros_catkin_ws/external_src
+cd ~/ros_catkin_ws/external_src
+wget http://sourceforge.net/projects/assimp/files/assimp-3.1/assimp-3.1.1_no_test_models.zip/download -O assimp-3.1.1_no_test_models.zip
+unzip assimp-3.1.1_no_test_models.zip
+cd assimp-3.1.1
+cmake .
+make
+sudo make install
+
+
+
+3.3 Rosdep으로 의존성 해결
+cd ~/ros_catkin_ws
+rosdep install -y --from-paths src --ignore-src --rosdistro kinetic -r --os=debian:buster
+
+3.4 Catkin Workspace 빌드하기
+
+sudo ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_BUILD_TYPE=Release --install-space /opt/ros/kinetic
+source /opt/ros/kinetic/setup.bash
+echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+
+여기까지 진행하면 /opt/ros/kinetic/bin 에 실행파일이 생성되어 ROS를 실행시킬 수 있다.
+$ ros + <TAB>키를 치면 다음과 같이 나타난다.
+rosawesome                    roslaunch-complete
+rosbag                        roslaunch-deps
+rosboost-cfg                  roslaunch-logs
+roscat                        roslocate
+roscd                         rosls
+rosclean                      rosmake
+rosco                         rosmaster
+rosconsole                    rosmsg
+roscore                       rosmsg-proto
+roscp                         rosnode
+roscreate-pkg                 rospack
+rosd                          rosparam
+rosdep                        rospd
+rosdep-source                 rospython
+rosdistro_build_cache         rosrun
+rosdistro_freeze_source       rosservice
+rosdistro_migrate_to_rep_141  rossrv
+rosdistro_migrate_to_rep_143  rosstack
+rosdistro_reformat            rostest
+rosed                         rostopic
+rosgraph                      rosunit
+rosinstall                    rosversion
+rosinstall_generator          rosws
+roslaunch                     roswtf
+
+4. Workspace 업데이트하기
+
+$ cd ~/ros_catkin_ws
+$ rosinstall_generator ros_comm ros_control joystick_drivers --rosdistro kinetic --deps --wet-only --tar > kinetic-custom_ros.rosinstall
+아무 응답이 없는것처럼 보이지만 잠시 기다리면 된다.
+
+이제 wstool을 이용하여 workspace 를 업데이트한다.
+$ wstool merge -t src kinetic-custom_ros.rosinstall
+$ wstool update -t src
+
+Workspace를 업데이트한 다음에는 rosdep을 실행하여 새로운 의존성 항목들을 설치할 수 있다.
+$ rosdep install --from-paths src --ignore-src --rosdistro kinetic -y -r --os=debian:buster
+
+마지막으로 workspace가 업데이트되고 모든 의존성이 해결되면 workspace를 리빌드 한다.
+$ sudo ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_BUILD_TYPE=Release --install-space /opt/ros/kinetic
+
+좋아요 1
+공유하기 글 요소
+
+출처: https://kyubot.tistory.com/90 [Kyubot's All Things Considered]
