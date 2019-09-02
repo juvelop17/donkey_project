@@ -97,7 +97,7 @@ class ImuTopicPublisher:
 
     def publishImuMsg(self, imuMsg):
         self.pub.publish(imuMsg)
-        rospy.loginfo(imuMsg)
+        # rospy.loginfo(imuMsg)
         self.rate.sleep()
 
     def run(self):
@@ -122,7 +122,7 @@ class ImuTopicPublisher:
                 gyro = self.mpu.get_rotation()
 
                 roll_pitch_yaw = self.mpu.DMP_get_euler_roll_pitch_yaw(quat, grav)
-                if self.count % 10000 == 0:
+                if self.count % 100 == 0:
                     print('quat: ', str(quat.x), str(quat.y), str(quat.z), str(quat.w))
                     print('accel: ', str(accel.x), str(accel.y), str(accel.z))
                     print('gyro: ', str(gyro[0]), str(gyro[1]), str(gyro[2]))
