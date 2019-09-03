@@ -108,7 +108,7 @@ class ImuTopicPublisher:
             # If overflow is detected by status or fifo count we want to reset
             if (FIFO_count == 1024) or (mpu_int_status & 0x10):
                 self.mpu.reset_FIFO()
-                print('overflow!')
+                # print('overflow!')
             # Check if fifo data is ready
             elif (mpu_int_status & 0x02):
                 # Wait until packet_size number of bytes are ready for reading, default
