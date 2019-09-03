@@ -54,7 +54,9 @@ class ImuTopicPublisher:
         self.FIFO_count_list = list()
 
         self.frame_name = 'imu_publisher'
-        self.pub = rospy.Publisher('/imu_topic', Imu, queue_size=10)
+        self.pub1 = rospy.Publisher('raw_imu', Imu, queue_size=10)
+        self.pub2 = rospy.Publisher('ahrs', Imu, queue_size=10)
+        self.pub3 = rospy.Publisher('rollpitch', Imu, queue_size=10)
         rospy.init_node(self.frame_name, anonymous=True)
         self.rate = rospy.Rate(10)  # 10hz
 
@@ -95,8 +97,8 @@ class ImuTopicPublisher:
 
         return imuMsg
 
-    def publishImuMsg(self, imuMsg):
-        self.pub.publish(imuMsg)
+    def publishImuMsg(self, pub, imuMsg):
+        pub.publish(imuMsg)
         # rospy.loginfo(imuMsg)
         self.rate.sleep()
 
@@ -131,7 +133,9 @@ class ImuTopicPublisher:
                     print('yaw: ' + str(roll_pitch_yaw.z))
 
                 imuMsg = self.createImuMsg(quat, accel, gyro)
-                self.publishImuMsg(imuMsg)
+                self.publishImuMsg(self.pub1,imuMsg)
+                self.publishImuMsg(self.pub2,imuMsg)
+                self.publishImuMsg(self.pub3,imuMsg)
                 self.count += 1
 
 if __name__ == '__main__':
