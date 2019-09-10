@@ -1,5 +1,6 @@
 import rospy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import String
 import time
 import sys, select, termios, tty
 import donkeycar as dk
@@ -58,14 +59,16 @@ class KeyboardRun:
     key_x = False
     key_c = False
     key_v = False
-
     key_ctrl = False
+
+    cmd_controller_pub_str = 'keyboard'
 
     def __init__(self):
         # settings = termios.tcgetattr(sys.stdin)
 
         rospy.init_node('keyboard_node')
-        self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.cmd_controller_pub = rospy.Publisher('cmd_controller', String, queue_size=1)
 
         self.speed = rospy.get_param("~speed", 0.18)
         self.turn = rospy.get_param("~turn", 0.7)
@@ -151,7 +154,8 @@ class KeyboardRun:
                 twist.angular.x = 0
                 twist.angular.y = 0
                 twist.angular.z = self.th * self.turn
-                self.pub.publish(twist)
+                self.cmd_controller_pub.publish(self.cmd_controller_pub_str)
+                self.cmd_vel_pub.publish(twist)
                 # print('key value : ',
                 #       'w',self.key_w,
                 #       'a',self.key_a,
@@ -177,7 +181,8 @@ class KeyboardRun:
             twist.angular.x = 0
             twist.angular.y = 0
             twist.angular.z = 0
-            self.pub.publish(twist)
+            self.cmd_controller_pub.publish(self.cmd_controller_pub_str)
+            self.cmd_vel_pub.publish(twist)
 
             # termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 
@@ -201,9 +206,7 @@ class KeyboardRun:
                 self.key_c = True
             elif _key == 'v':
                 self.key_v = True
-            elif key == keyboard.Key.ctrl:
-                self.key_ctrl = True
-            elif key == keyboard.Key.esc:
+            elif _key == keyboard.Key.esc:
                 print('exit')
                 return False
         except AttributeError:
@@ -228,9 +231,7 @@ class KeyboardRun:
             self.key_c = False
         elif _key == 'v':
             self.key_v = False
-        elif key == keyboard.Key.ctrl:
-            self.key_ctrl = False
-        elif key == keyboard.Key.esc:
+        elif _key == keyboard.Key.esc:
             # Stop listener
             print('exit')
             return False

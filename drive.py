@@ -1,19 +1,5 @@
 #!/usr/bin/python
 
-"""
-Class for low level control of owr car. It assumes ros-12cpwmboard has been
-installed
-"""
-
-import rospy
-from geometry_msgs.msg import Twist
-import time
-import sys, select, termios, tty
-import donkeycar as dk
-import threading
-from motor import PCA9685, PWMSteering, PWMThrottle
-
-#############################################################################################
 # drive
 
 
@@ -26,14 +12,19 @@ installed
 
 import rospy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import String
+import donkeycar as dk
 import time
+import threading
+from motor import PCA9685, PWMSteering, PWMThrottle
 
 
 
 class ControlCar():
+    controller = None
+
     def __init__(self):
         rospy.loginfo("Setting Up the Node...")
-
         rospy.init_node('donkey')
 
         steering_controller = PCA9685(cfg.STEERING_CHANNEL, cfg.PCA9685_I2C_ADDR, busnum=cfg.PCA9685_I2C_BUSNUM)
@@ -77,12 +68,17 @@ class ControlCar():
         self.steering.run(0)  # - : left, + : right
         rospy.loginfo("Setting actutors to idle")
 
+    def setController(self, message):
+        if message == 'keyboard':
+            self.isKeyboard = True
+
     def run(self):
         # --- Set the control rate
         rate = rospy.Rate(10)
 
         while not rospy.is_shutdown():
             ros_sub_twist = rospy.Subscriber("/cmd_vel", Twist, self.set_actuators_from_cmdvel)
+            ros_controller = rospy.Subscriber("/cmd_controller", String, self.setController)
             # rospy.loginfo("> Subscriber corrrectly initialized")
             # rospy.spin()
 
