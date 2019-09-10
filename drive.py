@@ -22,6 +22,8 @@ from motor import PCA9685, PWMSteering, PWMThrottle
 
 class ControlCar():
     controller = None
+    isKeyboard = False
+    isVoice = False
 
     def __init__(self):
         rospy.loginfo("Setting Up the Node...")
@@ -40,6 +42,7 @@ class ControlCar():
 
         # -- Save the time
         self._last_time_cmd_rcv = time.time()
+        self._last_time_voice_rcv = time.time()
         self._timeout_s = 5
 
     @property
@@ -71,6 +74,13 @@ class ControlCar():
     def setController(self, message):
         if message == 'keyboard':
             self.isKeyboard = True
+        else:
+            self.isKeyboard = False
+
+        if message == 'Voice':
+            self.isVoice = True
+        else:
+            self.isVoice = False
 
     def run(self):
         # --- Set the control rate
