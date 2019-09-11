@@ -204,28 +204,32 @@ class KeyboardRun:
             print('special key {0} pressed'.format(key.char))
 
     def on_release(self, key):
-        # print('{0} released'.format(key))
-        _key = key.char
-        if _key == 'w':
-            self.key_w = False
-        elif _key == 'a':
-            self.key_a = False
-        elif _key == 's':
-            self.key_s = False
-        elif _key == 'd':
-            self.key_d = False
-        elif _key == 'z':
-            self.key_z = False
-        elif _key == 'x':
-            self.key_x = False
-        elif _key == 'c':
-            self.key_c = False
-        elif _key == 'v':
-            self.key_v = False
-        elif _key == keyboard.Key.esc:
-            # Stop listener
-            print('exit')
-            return False
+        try:
+
+            # print('{0} released'.format(key))
+            _key = key.char
+            if _key == 'w':
+                self.key_w = False
+            elif _key == 'a':
+                self.key_a = False
+            elif _key == 's':
+                self.key_s = False
+            elif _key == 'd':
+                self.key_d = False
+            elif _key == 'z':
+                self.key_z = False
+            elif _key == 'x':
+                self.key_x = False
+            elif _key == 'c':
+                self.key_c = False
+            elif _key == 'v':
+                self.key_v = False
+            elif _key == keyboard.Key.esc:
+                # Stop listener
+                print('exit')
+                return False
+        except AttributeError:
+            print('special key {0} pressed'.format(key.char))
 
     def vels(self, speed, turn):
         return "currently:\tspeed %s\tturn %s " % (speed, turn)
