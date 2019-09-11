@@ -14,6 +14,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from std_msgs.msg import String
 import donkeycar as dk
+from imu_topic_pub import ImuTopicPublisher
 import time
 import threading
 from motor import PCA9685, PWMSteering, PWMThrottle
@@ -24,6 +25,9 @@ class ControlCar():
     controller = None
     isKeyboard = False
     isVoice = False
+
+    voice_speed = 0.2
+    voice_turn = 0.5
 
     def __init__(self):
         rospy.loginfo("Setting Up the Node...")
@@ -51,19 +55,13 @@ class ControlCar():
         return (time.time() - self._last_time_cmd_rcv < self._timeout_s)
 
     def set_actuators_from_cmdvel(self, message):
-        """
-        Get a message from cmd_vel, assuming a maximum input of 1
-        """
         # -- Save the time
         self._last_time_cmd_rcv = time.time()
-        # print('message.linear', message.linear)
-        # print('message.angular', message.angular)
 
         # -- Convert vel into servo values
         self.throttle.run(message.linear.x)  # - : backward, + : forward
         self.steering.run(message.angular.z)  # - : left, + : right
         rospy.loginfo("Got a command v = %2.1f  s = %2.1f" % (message.linear.x, message.angular.z))
-        # self.send_servo_msg()
 
     def set_actuators_idle(self):
         # -- Convert vel into servo values
@@ -77,17 +75,37 @@ class ControlCar():
         else:
             self.isKeyboard = False
 
-        if message == 'Voice':
+        if message == 'voice':
             self.isVoice = True
+            ros_voice_text = rospy.Subscriber("/voice_text", String, self.setVoiceControl)
         else:
             self.isVoice = False
+
+    def setVoiceControl(self, message):
+        if self.isVoice == True:
+            if message in ['앞으로','가']:
+                self.throttle.run(self.voice_speed)  # - : backward, + : forward
+                self.steering.run(0)  # - : left, + : right
+            if message in ['멈춰','정지']:
+                self.throttle.run(0)  # - : backward, + : forward
+                self.steering.run(0)  # - : left, + : right
+            if message in ['오른쪽']:
+                self.throttle.run(self.voice_speed)  # - : backward, + : forward
+                self.steering.run(self.voice_turn)  # - : left, + : right
+            if message in ['왼쪽']:
+                self.throttle.run(self.voice_speed)  # - : backward, + : forward
+                self.steering.run(-self.voice_turn)  # - : left, + : right
 
     def run(self):
         # --- Set the control rate
         rate = rospy.Rate(10)
 
+        # run imu node
+        imuTopicPublisher = ImuTopicPublisher()
+        imuTopicPublisher.run()
+
         while not rospy.is_shutdown():
-            ros_sub_twist = rospy.Subscriber("/cmd_vel", Twist, self.set_actuators_from_cmdvel)
+            ros_cmd_vel = rospy.Subscriber("/cmd_vel", Twist, self.set_actuators_from_cmdvel)
             ros_controller = rospy.Subscriber("/cmd_controller", String, self.setController)
             # rospy.loginfo("> Subscriber corrrectly initialized")
             # rospy.spin()

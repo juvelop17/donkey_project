@@ -34,12 +34,15 @@ from __future__ import division
 import re
 import sys
 import os
+import rospy
+import time
 
 from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 import pyaudio
 from six.moves import queue
+from std_msgs.msg import String
 
 
 
@@ -57,8 +60,12 @@ class VoiceRecognition:
         language_code = 'ko-KR'  # a BCP-47 language tag
 
         # 키파일 등록
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pirl/posvacpjt-251711-c6df951f8f17.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./posvacpjt-251711-c6df951f8f17.json"
+        # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pirl/posvacpjt-251711-c6df951f8f17.json"
         # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pi/posvacpjt-251711-c6df951f8f17.json"
+
+        self.cmd_controller_pub = rospy.Publisher('cmd_controller', String, queue_size=1)
+        self.voice_text_pub = rospy.Publisher('voice_text', String, queue_size=1)
 
         self.client = speech.SpeechClient()
         self.config = types.RecognitionConfig(
@@ -68,7 +75,6 @@ class VoiceRecognition:
         self.streaming_config = types.StreamingRecognitionConfig(
             config=self.config,
             interim_results=True)
-
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -115,15 +121,17 @@ class VoiceRecognition:
                 num_chars_printed = len(transcript)
 
             else:
-                print('transcript',transcript)
-                print('overwrite_chars',overwrite_chars)
+                # print('transcript',transcript)
+                # print('overwrite_chars',overwrite_chars)
                 print(transcript + overwrite_chars)
 
+                # self.prev_text = self.curr_text
+                # self.curr_text = transcript
+                # print('self.prev_text',self.prev_text)
+                # print('self.curr_text',self.curr_text)
 
-                print('self.prev_text',self.prev_text)
-                print('self.curr_text',self.curr_text)
-                self.prev_text = self.curr_text
-                self.curr_text = transcript
+                self.cmd_controller_pub.publish('voice')
+                self.voice_text_pub.publish(transcript + overwrite_chars)
 
                 # Exit recognition if any of the transcribed phrases could be
                 # one of our keywords.
@@ -134,14 +142,16 @@ class VoiceRecognition:
                 num_chars_printed = 0
 
     def run(self):
-        with MicrophoneStream(self.RATE, self.CHUNK) as stream:
-            audio_generator = stream.generator()
-            requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audio_generator)
+        while True :
+            with MicrophoneStream(self.RATE, self.CHUNK) as stream:
+                audio_generator = stream.generator()
+                requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audio_generator)
 
-            responses = self.client.streaming_recognize(self.streaming_config, requests)
+                responses = self.client.streaming_recognize(self.streaming_config, requests)
 
-            # Now, put the transcription responses to use.
-            self.listen_print_loop(responses)
+                # Now, put the transcription responses to use.
+                self.listen_print_loop(responses)
+            time.sleep(1)
 
 
 class MicrophoneStream(object):

@@ -156,16 +156,7 @@ class KeyboardRun:
                 twist.angular.z = self.th * self.turn
                 self.cmd_controller_pub.publish(self.cmd_controller_pub_str)
                 self.cmd_vel_pub.publish(twist)
-                # print('key value : ',
-                #       'w',self.key_w,
-                #       'a',self.key_a,
-                #       's',self.key_s,
-                #       'd',self.key_d,
-                #       'z',self.key_z,
-                #       'x',self.key_x,
-                #       'c',self.key_c,
-                #       'v',self.key_v,
-                #       'ctrl',self.key_ctrl)
+
                 print('twist value : ',twist.linear.x,twist.linear.y,twist.linear.z,twist.angular.x,twist.angular.y,twist.angular.z)
 
                 time.sleep(0.1)
