@@ -17,12 +17,12 @@ from pynput import keyboard
 moveBindings = {
     'w': (1, 0, 0, 0),
     'a': (0, 0, 0, -1),
-    's': (-1, 0, 0, 0),
+    's': (-1.2, 0, 0, 0),
     'd': (0, 0, 0, 1),
     'wa': (1, 0, 0, -1),
     'wd': (1, 0, 0, 1),
-    'sa': (-1, 0, 0, -1),
-    'sd': (-1, 0, 0, 1)
+    'sa': (-1.2, 0, 0, -1),
+    'sd': (-1.2, 0, 0, 1)
 }
 
 speedBindings={
@@ -59,7 +59,7 @@ class KeyboardRun:
     key_x = False
     key_c = False
     key_v = False
-    key_ctrl = False
+    key_esc = False
 
     cmd_controller_pub_str = 'keyboard'
 
@@ -138,7 +138,7 @@ class KeyboardRun:
                     if (self.status == 14):
                         print(msg)
                     self.status = (self.status + 1) % 15
-                elif self.key_ctrl == True:
+                elif self.key_esc== True:
                     print('exit')
                     self.switch = False
                 else:
@@ -175,11 +175,10 @@ class KeyboardRun:
             self.cmd_controller_pub.publish(self.cmd_controller_pub_str)
             self.cmd_vel_pub.publish(twist)
 
-            # termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 
     def on_press(self, key):
         try:
-            # print('alphanumeric key {0} pressed'.format(key.char))
+            print('alphanumeric key {0} pressed'.format(key.char))
             _key = key.char
             if _key == 'w':
                 self.key_w = True
@@ -198,38 +197,36 @@ class KeyboardRun:
             elif _key == 'v':
                 self.key_v = True
             elif _key == keyboard.Key.esc:
+                self.key_esc = True
                 print('exit')
                 return False
         except AttributeError:
             print('special key {0} pressed'.format(key.char))
 
     def on_release(self, key):
-        try:
-
-            # print('{0} released'.format(key))
-            _key = key.char
-            if _key == 'w':
-                self.key_w = False
-            elif _key == 'a':
-                self.key_a = False
-            elif _key == 's':
-                self.key_s = False
-            elif _key == 'd':
-                self.key_d = False
-            elif _key == 'z':
-                self.key_z = False
-            elif _key == 'x':
-                self.key_x = False
-            elif _key == 'c':
-                self.key_c = False
-            elif _key == 'v':
-                self.key_v = False
-            elif _key == keyboard.Key.esc:
-                # Stop listener
-                print('exit')
-                return False
-        except AttributeError:
-            print('special key {0} pressed'.format(key.char))
+        print('{0} released'.format(key))
+        _key = key.char
+        if _key == 'w':
+            self.key_w = False
+        elif _key == 'a':
+            self.key_a = False
+        elif _key == 's':
+            self.key_s = False
+        elif _key == 'd':
+            self.key_d = False
+        elif _key == 'z':
+            self.key_z = False
+        elif _key == 'x':
+            self.key_x = False
+        elif _key == 'c':
+            self.key_c = False
+        elif _key == 'v':
+            self.key_v = False
+        elif _key == keyboard.Key.esc:
+            self.key_esc = True
+            # Stop listener
+            print('exit')
+            return False
 
     def vels(self, speed, turn):
         return "currently:\tspeed %s\tturn %s " % (speed, turn)
