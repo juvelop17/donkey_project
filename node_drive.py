@@ -48,10 +48,14 @@ class ControlCar():
         self._last_time_cmd_rcv = time.time()
         self._last_time_voice_rcv = time.time()
         self._timeout_s = 5
+	
+        ros_cmd_vel = rospy.Subscriber("/cmd_vel", Twist, self.set_actuators_from_cmdvel)
+        #ros_controller = rospy.Subscriber("/cmd_controller", String, self.setController)
+        rospy.loginfo("> Subscriber corrrectly initialized")
 
     @property
     def is_controller_connected(self):
-        print(time.time() - self._last_time_cmd_rcv)
+        #print(time.time() - self._last_time_cmd_rcv)
         return (time.time() - self._last_time_cmd_rcv < self._timeout_s)
 
     def set_actuators_from_cmdvel(self, message):
@@ -76,6 +80,7 @@ class ControlCar():
             self.isKeyboard = False
 
         if message == 'voice':
+            print('get voice')
             self.isVoice = True
             ros_voice_text = rospy.Subscriber("/voice_text", String, self.setVoiceControl)
         else:
@@ -83,16 +88,19 @@ class ControlCar():
 
     def setVoiceControl(self, message):
         if self.isVoice == True:
-            if message in ['앞으로','가']:
+            _message = message.strip().split()
+            print('message',_message)
+            for m in _message:
+            if msg in ['출발','앞으로','가']:
                 self.throttle.run(self.voice_speed)  # - : backward, + : forward
                 self.steering.run(0)  # - : left, + : right
-            if message in ['멈춰','정지']:
+            if msg in ['멈춰','정지']:
                 self.throttle.run(0)  # - : backward, + : forward
                 self.steering.run(0)  # - : left, + : right
-            if message in ['오른쪽']:
+            if msg in ['오른쪽']:
                 self.throttle.run(self.voice_speed)  # - : backward, + : forward
                 self.steering.run(self.voice_turn)  # - : left, + : right
-            if message in ['왼쪽']:
+            if msg in ['왼쪽']:
                 self.throttle.run(self.voice_speed)  # - : backward, + : forward
                 self.steering.run(-self.voice_turn)  # - : left, + : right
 
@@ -102,20 +110,18 @@ class ControlCar():
 
         # run imu node
         imuTopicPublisher = ImuTopicPublisher()
+        print('imuTopicPublisher',imuTopicPublisher)
         imuTopicPublisher.run()
+        print('imuTopicPublisher',imuTopicPublisher)
 
         while not rospy.is_shutdown():
-            ros_cmd_vel = rospy.Subscriber("/cmd_vel", Twist, self.set_actuators_from_cmdvel)
-            ros_controller = rospy.Subscriber("/cmd_controller", String, self.setController)
-            # rospy.loginfo("> Subscriber corrrectly initialized")
-            # rospy.spin()
-
-            print(self._last_time_cmd_rcv, self.is_controller_connected)
+            #print(self._last_time_cmd_rcv, self.is_controller_connected)
             if not self.is_controller_connected:
                 rospy.loginfo("controller disconnected")
                 self.set_actuators_idle()
 
-            rate.sleep()
+            #rospy.spin()
+            rospy.sleep(0.1)
 
 
 

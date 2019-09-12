@@ -25,12 +25,13 @@ SOFTWARE.
 from MPU6050.MPU6050 import MPU6050
 import rospy
 from sensor_msgs.msg import Imu
+import time
+from threading import Thread
 
 
-
-
-class ImuTopicPublisher:
+class ImuTopicPublisher(Thread):
     def __init__(self):
+        super().__init__()
         self.setOffsets()
 
         self.mpu = MPU6050(self.i2c_bus, self.device_address, self.x_accel_offset, self.y_accel_offset,
@@ -59,6 +60,10 @@ class ImuTopicPublisher:
         self.pub3 = rospy.Publisher('rollpitch', Imu, queue_size=10)
         # rospy.init_node(self.frame_name, anonymous=True)
         self.rate = rospy.Rate(10)  # 10hz
+
+        # Thread options
+        self.daemon = True
+        
 
     def setOffsets(self):
         self.i2c_bus = 1
@@ -104,13 +109,14 @@ class ImuTopicPublisher:
 
     def run(self):
         while True:
+            time.sleep(0.1)
             FIFO_count = self.mpu.get_FIFO_count()
             mpu_int_status = self.mpu.get_int_status()
 
             # If overflow is detected by status or fifo count we want to reset
             if (FIFO_count == 1024) or (mpu_int_status & 0x10):
                 self.mpu.reset_FIFO()
-                # print('overflow!')
+                #print('overflow!')
             # Check if fifo data is ready
             elif (mpu_int_status & 0x02):
                 # Wait until packet_size number of bytes are ready for reading, default
@@ -119,24 +125,25 @@ class ImuTopicPublisher:
                     FIFO_count = self.mpu.get_FIFO_count()
                 FIFO_buffer = self.mpu.get_FIFO_bytes(self.packet_size)
                 accel = self.mpu.DMP_get_acceleration_int16(FIFO_buffer)
-                quat = self.mpu.DMP_get_quaternion_int16(FIFO_buffer)
+                quat = self.mpu.DMP_get_quaternion_int16(FIFO_buffer).get_normalized()
                 grav = self.mpu.DMP_get_gravity(quat)
                 gyro = self.mpu.get_rotation()
 
                 roll_pitch_yaw = self.mpu.DMP_get_euler_roll_pitch_yaw(quat, grav)
-                if self.count % 100 == 0:
-                    print('quat: ', str(quat.x), str(quat.y), str(quat.z), str(quat.w))
+                if self.count % 10 == 0:
+                    print('quat: ', str(round(quat.x,4)), str(round(quat.y,4)), str(round(quat.z,4)), str(round(quat.w,4)))
                     print('accel: ', str(accel.x), str(accel.y), str(accel.z))
                     print('gyro: ', str(gyro[0]), str(gyro[1]), str(gyro[2]))
-                    print('roll: ' + str(roll_pitch_yaw.x))
-                    print('pitch: ' + str(roll_pitch_yaw.y))
-                    print('yaw: ' + str(roll_pitch_yaw.z))
+                    #print('roll: ' + str(roll_pitch_yaw.x))
+                    #print('pitch: ' + str(roll_pitch_yaw.y))
+                    #print('yaw: ' + str(roll_pitch_yaw.z))
 
                 imuMsg = self.createImuMsg(quat, accel, gyro)
                 self.publishImuMsg(self.pub1,imuMsg)
                 self.publishImuMsg(self.pub2,imuMsg)
                 self.publishImuMsg(self.pub3,imuMsg)
                 self.count += 1
+
 
 if __name__ == '__main__':
     imuTopicPublisher = ImuTopicPublisher()

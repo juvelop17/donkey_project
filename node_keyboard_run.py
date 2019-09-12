@@ -15,14 +15,14 @@ from pynput import keyboard
 
 
 moveBindings = {
-    'w': (1, 0, 0, 0),
-    'a': (0, 0, 0, -1),
-    's': (-1.2, 0, 0, 0),
-    'd': (0, 0, 0, 1),
-    'wa': (1, 0, 0, -1),
-    'wd': (1, 0, 0, 1),
-    'sa': (-1.2, 0, 0, -1),
-    'sd': (-1.2, 0, 0, 1)
+    'w': (1, 0),
+    'a': (0, -1),
+    's': (-1.2, 0),
+    'd': (0, 1),
+    'wa': (1, -1),
+    'wd': (1, 1),
+    'sa': (-1.2, -1),
+    'sd': (-1.2, 1)
 }
 
 speedBindings={
@@ -70,7 +70,7 @@ class KeyboardRun:
         self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         self.cmd_controller_pub = rospy.Publisher('cmd_controller', String, queue_size=1)
 
-        self.speed = rospy.get_param("~speed", 0.18)
+        self.speed = rospy.get_param("~speed", 0.19)
         self.turn = rospy.get_param("~turn", 0.7)
         self.x = 0
         self.y = 0
@@ -92,23 +92,23 @@ class KeyboardRun:
 
             while (self.listener.isAlive()):
                 if self.key_w == True and self.key_a == False and self.key_d == False:
-                    self.x, self.y, self.z, self.th = moveBindings['w']
+                    self.x, self.th = moveBindings['w']
                 elif self.key_s == True and self.key_a == False and self.key_d == False:
-                    self.x, self.y, self.z, self.th = moveBindings['s']
+                    self.x, self.th = moveBindings['s']
 
                 elif self.key_w == True and self.key_a == True:
-                    self.x, self.y, self.z, self.th = moveBindings['wa']
+                    self.x, self.th = moveBindings['wa']
                 elif self.key_w == True and self.key_d == True:
-                    self.x, self.y, self.z, self.th = moveBindings['wd']
+                    self.x, self.th = moveBindings['wd']
                 elif self.key_s == True and self.key_a == True:
-                    self.x, self.y, self.z, self.th = moveBindings['sa']
+                    self.x, self.th = moveBindings['sa']
                 elif self.key_s == True and self.key_d == True:
-                    self.x, self.y, self.z, self.th = moveBindings['sd']
+                    self.x, self.th = moveBindings['sd']
 
                 elif self.key_d == True:
-                    self.x, self.y, self.z, self.th = moveBindings['d']
+                    self.x, self.th = moveBindings['d']
                 elif self.key_a == True:
-                    self.x, self.y, self.z, self.th = moveBindings['a']
+                    self.x, self.th = moveBindings['a']
 
                 elif self.key_z == True:
                     self.speed *= speedBindings['z'][0]
@@ -149,31 +149,20 @@ class KeyboardRun:
 
                 twist = Twist()
                 twist.linear.x = self.x * self.speed
-                twist.linear.y = self.y * self.speed
-                twist.linear.z = self.z * self.speed
+                twist.linear.y = 0
+                twist.linear.z = 0
                 twist.angular.x = 0
                 twist.angular.y = 0
                 twist.angular.z = self.th * self.turn
                 self.cmd_controller_pub.publish(self.cmd_controller_pub_str)
                 self.cmd_vel_pub.publish(twist)
 
-                print('twist value : ',twist.linear.x,twist.linear.y,twist.linear.z,twist.angular.x,twist.angular.y,twist.angular.z)
+                print('twist value : ',twist.linear.x,twist.angular.z)
 
                 time.sleep(0.1)
 
         except Exception as e:
             print(e)
-
-        finally:
-            twist = Twist()
-            twist.linear.x = 0
-            twist.linear.y = 0
-            twist.linear.z = 0
-            twist.angular.x = 0
-            twist.angular.y = 0
-            twist.angular.z = 0
-            self.cmd_controller_pub.publish(self.cmd_controller_pub_str)
-            self.cmd_vel_pub.publish(twist)
 
 
     def on_press(self, key):
@@ -196,37 +185,33 @@ class KeyboardRun:
                 self.key_c = True
             elif _key == 'v':
                 self.key_v = True
-            elif _key == keyboard.Key.esc:
-                self.key_esc = True
-                print('exit')
-                return False
+
         except AttributeError:
             print('special key {0} pressed'.format(key.char))
 
     def on_release(self, key):
-        print('{0} released'.format(key))
-        _key = key.char
-        if _key == 'w':
-            self.key_w = False
-        elif _key == 'a':
-            self.key_a = False
-        elif _key == 's':
-            self.key_s = False
-        elif _key == 'd':
-            self.key_d = False
-        elif _key == 'z':
-            self.key_z = False
-        elif _key == 'x':
-            self.key_x = False
-        elif _key == 'c':
-            self.key_c = False
-        elif _key == 'v':
-            self.key_v = False
-        elif _key == keyboard.Key.esc:
-            self.key_esc = True
-            # Stop listener
-            print('exit')
-            return False
+        try:
+	        print('{0} released'.format(key))
+	        _key = key.char
+	        if _key == 'w':
+	            self.key_w = False
+	        elif _key == 'a':
+	            self.key_a = False
+	        elif _key == 's':
+	            self.key_s = False
+	        elif _key == 'd':
+	            self.key_d = False
+	        elif _key == 'z':
+	            self.key_z = False
+	        elif _key == 'x':
+	            self.key_x = False
+	        elif _key == 'c':
+	            self.key_c = False
+	        elif _key == 'v':
+	            self.key_v = False
+
+        except AttributeError:
+            print('special key {0} pressed'.format(key.char))
 
     def vels(self, speed, turn):
         return "currently:\tspeed %s\tturn %s " % (speed, turn)

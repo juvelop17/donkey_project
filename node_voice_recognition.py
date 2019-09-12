@@ -44,9 +44,10 @@ import pyaudio
 from six.moves import queue
 from std_msgs.msg import String
 
+from threading import Thread
 
 
-class VoiceRecognition:
+class VoiceRecognition(Thread):
     prev_text = None
     curr_text = None
 
@@ -55,15 +56,19 @@ class VoiceRecognition:
     CHUNK = int(RATE / 10)  # 100ms
 
     def __init__(self):
+        super().__init__()
+        self.daemon = True
         # See http://g.co/cloud/speech/docs/languages
         # for a list of supported languages.
         language_code = 'ko-KR'  # a BCP-47 language tag
 
         # 키파일 등록
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./posvacpjt-251711-c6df951f8f17.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/ubuntu/Desktop/donkey_project/posvacpjt-251711-c6df951f8f17.json"
+        #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./posvacpjt-251711-c6df951f8f17.json"
         # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pirl/posvacpjt-251711-c6df951f8f17.json"
         # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pi/posvacpjt-251711-c6df951f8f17.json"
-
+	
+        rospy.init_node('donkey')
         self.cmd_controller_pub = rospy.Publisher('cmd_controller', String, queue_size=1)
         self.voice_text_pub = rospy.Publisher('voice_text', String, queue_size=1)
 
@@ -94,6 +99,7 @@ class VoiceRecognition:
         print('listen_print_loop 시작')
         num_chars_printed = 0
         for response in responses:
+            #print(response)
             if not response.results:
                 continue
 
@@ -131,7 +137,9 @@ class VoiceRecognition:
                 # print('self.curr_text',self.curr_text)
 
                 self.cmd_controller_pub.publish('voice')
-                self.voice_text_pub.publish(transcript + overwrite_chars)
+                #self.voice_text_pub.publish(transcript.decode('cp949'))
+                #self.voice_text_pub.publish(transcript.encode('utf-8'))
+                self.voice_text_pub.publish(transcript)
 
                 # Exit recognition if any of the transcribed phrases could be
                 # one of our keywords.
