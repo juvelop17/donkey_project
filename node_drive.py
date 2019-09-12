@@ -91,18 +91,19 @@ class ControlCar():
             _message = message.strip().split()
             print('message',_message)
             for m in _message:
-            if msg in ['출발','앞으로','가']:
-                self.throttle.run(self.voice_speed)  # - : backward, + : forward
-                self.steering.run(0)  # - : left, + : right
-            if msg in ['멈춰','정지']:
-                self.throttle.run(0)  # - : backward, + : forward
-                self.steering.run(0)  # - : left, + : right
-            if msg in ['오른쪽']:
-                self.throttle.run(self.voice_speed)  # - : backward, + : forward
-                self.steering.run(self.voice_turn)  # - : left, + : right
-            if msg in ['왼쪽']:
-                self.throttle.run(self.voice_speed)  # - : backward, + : forward
-                self.steering.run(-self.voice_turn)  # - : left, + : right
+                print('m',m)
+                if m in ['출발','앞으로','가']:
+                    self.throttle.run(self.voice_speed)  # - : backward, + : forward
+                    self.steering.run(0)  # - : left, + : right
+                if m in ['멈춰','정지']:
+                    self.throttle.run(0)  # - : backward, + : forward
+                    self.steering.run(0)  # - : left, + : right
+                if m in ['오른쪽']:
+                    self.throttle.run(self.voice_speed)  # - : backward, + : forward
+                    self.steering.run(self.voice_turn)  # - : left, + : right
+                if m in ['왼쪽']:
+                    self.throttle.run(self.voice_speed)  # - : backward, + : forward
+                    self.steering.run(-self.voice_turn)  # - : left, + : right
 
     def run(self):
         # --- Set the control rate
