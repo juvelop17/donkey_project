@@ -68,9 +68,10 @@ class VoiceRecognition(Thread):
         # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pirl/posvacpjt-251711-c6df951f8f17.json"
         # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pi/posvacpjt-251711-c6df951f8f17.json"
 	
-        rospy.init_node('donkey')
+        rospy.init_node('voice_recognition')
         self.cmd_controller_pub = rospy.Publisher('cmd_controller', String, queue_size=1)
         self.voice_text_pub = rospy.Publisher('voice_text', String, queue_size=1)
+        self.cmd_controller_pub.publish('voice')
 
         self.client = speech.SpeechClient()
         self.config = types.RecognitionConfig(

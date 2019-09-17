@@ -58,7 +58,7 @@ class ImuTopicPublisher(Thread):
         self.pub1 = rospy.Publisher('raw_imu', Imu, queue_size=10)
         self.pub2 = rospy.Publisher('ahrs', Imu, queue_size=10)
         self.pub3 = rospy.Publisher('rollpitch', Imu, queue_size=10)
-        # rospy.init_node(self.frame_name, anonymous=True)
+        rospy.init_node(self.frame_name, anonymous=True)
         self.rate = rospy.Rate(10)  # 10hz
 
         # Thread options
