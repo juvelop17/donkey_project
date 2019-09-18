@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import time
 
 class VacuumMortor:
     pin1 = 17  # 방향 1
@@ -12,8 +13,8 @@ class VacuumMortor:
         GPIO.setup(self.pin2, GPIO.OUT)
         GPIO.setup(self.pin3, GPIO.OUT)
 
-        GPIO.output(self.pin1, True)
-        GPIO.output(self.pin2, False)
+        GPIO.output(self.pin1, False)
+        GPIO.output(self.pin2, True)
 
     def run(self):
         GPIO.output(self.pin3, True)
@@ -23,3 +24,9 @@ class VacuumMortor:
         GPIO.output(self.pin3, False)
         print('청소기 정지')
 
+
+if __name__ == '__main__':
+	vacuumMortor = VacuumMortor()
+	vacuumMortor.run() 
+	time.sleep(5)
+	vacuumMortor.cancel()
