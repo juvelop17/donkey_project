@@ -241,7 +241,7 @@ class MicrophoneStream(object):
 
 def main():
     voiceRecognition = VoiceRecognition()
-    voiceRecognition.run()
+    voiceRecognition.start()
 
     while True:
         pass

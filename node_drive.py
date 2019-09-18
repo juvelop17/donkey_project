@@ -137,7 +137,7 @@ class ControlCar():
 
         # run imu node
         imuTopicPublisher = ImuTopicPublisher()
-        imuTopicPublisher.run()
+        imuTopicPublisher.start()
         print('imuTopicPublisher',imuTopicPublisher)
 
         while not rospy.is_shutdown():

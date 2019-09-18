@@ -161,7 +161,7 @@ class KeyboardRun(Thread):
                 #     else:
                 #         self.voice_status = True
                 #         self.voiceRecognition = VoiceRecognition()
-                #         self.voiceRecognition.run()
+                #         self.voiceRecognition.start()
 
                 elif self.key_esc == True:
                     print('exit')
@@ -228,10 +228,12 @@ class KeyboardRun(Thread):
                     print('self.voice_status False -> True')
                     self.voice_status = True
                     self.voiceRecognition = VoiceRecognition()
-                    self.voiceRecognition.run()
+                    self.voiceRecognition.start()
 
         except AttributeError:
             print('special key {0} pressed'.format(key.char))
+        except Exception as e:
+            print(e)
 
     def on_release(self, key):
         try:
@@ -260,6 +262,8 @@ class KeyboardRun(Thread):
 
         except AttributeError:
             print('special key {0} pressed'.format(key.char))
+        except Exception as e:
+            print(e)
 
     def vels(self, speed, turn):
         return "currently:\tspeed %s\tturn %s " % (speed, turn)
@@ -268,7 +272,7 @@ class KeyboardRun(Thread):
 if __name__ == "__main__":
     cfg = dk.load_config()
     keyboardRun = KeyboardRun()  #
-    keyboardRun.run()
+    keyboardRun.start()
 
     while True:
         pass
