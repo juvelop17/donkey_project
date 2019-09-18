@@ -5,6 +5,7 @@ import time
 import sys, select, termios, tty
 import donkeycar as dk
 from node_voice_recognition import VoiceRecognition
+from vacuum import VacuumMortor
 
 # import keyboard  # using module keyboard
 from pynput import keyboard
@@ -146,8 +147,11 @@ class KeyboardRun:
                 elif self.key_g == True:
                     if self.vacuum_status:
                         self.vacuum_status = False
+                        self.vacuumMortor.cancel()
                     else:
                         self.vacuum_status = True
+                        self.vacuumMortor = VacuumMortor()
+                        self.vacuumMortor.run()
                 elif self.key_h == True:
                     if self.voice_status:
                         self.voice_status = False
