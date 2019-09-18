@@ -6,6 +6,7 @@ import sys, select, termios, tty
 import donkeycar as dk
 from node_voice_recognition import VoiceRecognition
 from vacuum import VacuumMortor
+from threading import Thread
 
 # import keyboard  # using module keyboard
 from pynput import keyboard
@@ -48,7 +49,7 @@ CTRL-C to quit
 '''
 
 
-class KeyboardRun:
+class KeyboardRun(Thread):
     key_w = False
     key_a = False
     key_s = False
@@ -69,6 +70,7 @@ class KeyboardRun:
     cmd_controller_pub_str = 'keyboard'
 
     def __init__(self):
+        Thread.__init__(self)
         # settings = termios.tcgetattr(sys.stdin)
 
         rospy.init_node('keyboard_node')
@@ -267,3 +269,5 @@ if __name__ == "__main__":
     cfg = dk.load_config()
     keyboardRun = KeyboardRun()  #
     keyboardRun.run()
+    while True:
+        pass
