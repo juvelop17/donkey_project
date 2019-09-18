@@ -47,7 +47,7 @@ class ControlCar():
         self._last_time_cmd_rcv = time.time()
         self._timeout_s = 5
         self._last_time_voice_rcv = time.time()
-        self._voice_timeout_s = 2
+        self._voice_timeout_s = 3
 
         ros_cmd_vel = rospy.Subscriber("/cmd_vel", Twist, self.set_actuators_from_cmdvel)
         ros_controller = rospy.Subscriber("/cmd_controller", String, self.setController)
@@ -99,7 +99,7 @@ class ControlCar():
         for msg in _message:
             _msg = msg.strip()
             print('_msg', _msg)
-            if _msg in ['출발', '앞으로', '가']:
+            if _msg in ['출발', '앞으로']:
                 print('출발')
                 self._last_time_voice_rcv = time.time()
                 self.throttle.run(self.voice_speed)  # - : backward, + : forward
@@ -109,12 +109,12 @@ class ControlCar():
                 self._last_time_voice_rcv = time.time()
                 self.throttle.run(0)  # - : backward, + : forward
                 self.steering.run(0)  # - : left, + : right
-            if _msg in ['오른쪽']:
+            if _msg in ['오른쪽','오른쪽으로']:
                 print('오른쪽')
                 self._last_time_voice_rcv = time.time()
                 self.throttle.run(self.voice_speed)  # - : backward, + : forward
                 self.steering.run(self.voice_turn)  # - : left, + : right
-            if _msg in ['왼쪽']:
+            if _msg in ['왼쪽','왼쪽으로']:
                 print('왼쪽')
                 self._last_time_voice_rcv = time.time()
                 self.throttle.run(self.voice_speed)  # - : backward, + : forward

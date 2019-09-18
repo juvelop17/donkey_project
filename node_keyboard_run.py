@@ -4,11 +4,10 @@ from std_msgs.msg import String
 import time
 import sys, select, termios, tty
 import donkeycar as dk
+from node_voice_recognition import VoiceRecognition
 
 # import keyboard  # using module keyboard
 from pynput import keyboard
-
-
 
 #############################################################################################
 # keyboard
@@ -25,13 +24,12 @@ moveBindings = {
     'sd': (-1.2, 1)
 }
 
-speedBindings={
+speedBindings = {
     'z': (1.1, 1),
     'x': (.9, 1),
     'c': (1, 1.1),
     'v': (1, .9)
 }
-
 
 msg = '''
 
@@ -50,7 +48,6 @@ CTRL-C to quit
 
 
 class KeyboardRun:
-
     key_w = False
     key_a = False
     key_s = False
@@ -59,6 +56,13 @@ class KeyboardRun:
     key_x = False
     key_c = False
     key_v = False
+
+    key_g = False  # 청소기 작동
+    key_h = False  # 음성인식 작동
+
+    vacuum_status = False
+    voice_status = False
+
     key_esc = False
 
     cmd_controller_pub_str = 'keyboard'
@@ -138,7 +142,22 @@ class KeyboardRun:
                     if (self.status == 14):
                         print(msg)
                     self.status = (self.status + 1) % 15
-                elif self.key_esc== True:
+
+                elif self.key_g == True:
+                    if self.vacuum_status:
+                        self.vacuum_status = False
+                    else:
+                        self.vacuum_status = True
+                elif self.key_h == True:
+                    if self.voice_status:
+                        self.voice_status = False
+                        self.voiceRecognition.cancel()
+                    else:
+                        self.voice_status = True
+                        self.voiceRecognition = VoiceRecognition()
+                        self.voiceRecognition.run()
+
+                elif self.key_esc == True:
                     print('exit')
                     self.switch = False
                 else:
@@ -157,13 +176,12 @@ class KeyboardRun:
                 self.cmd_controller_pub.publish(self.cmd_controller_pub_str)
                 self.cmd_vel_pub.publish(twist)
 
-                print('twist value : ',twist.linear.x,twist.angular.z)
+                print('twist value : ', twist.linear.x, twist.angular.z)
 
                 time.sleep(0.1)
 
         except Exception as e:
             print(e)
-
 
     def on_press(self, key):
         try:
@@ -185,30 +203,38 @@ class KeyboardRun:
                 self.key_c = True
             elif _key == 'v':
                 self.key_v = True
+            elif _key == 'g':
+                self.key_g = True
+            elif _key == 'h':
+                self.key_h = True
 
         except AttributeError:
             print('special key {0} pressed'.format(key.char))
 
     def on_release(self, key):
         try:
-	        print('{0} released'.format(key))
-	        _key = key.char
-	        if _key == 'w':
-	            self.key_w = False
-	        elif _key == 'a':
-	            self.key_a = False
-	        elif _key == 's':
-	            self.key_s = False
-	        elif _key == 'd':
-	            self.key_d = False
-	        elif _key == 'z':
-	            self.key_z = False
-	        elif _key == 'x':
-	            self.key_x = False
-	        elif _key == 'c':
-	            self.key_c = False
-	        elif _key == 'v':
-	            self.key_v = False
+            print('{0} released'.format(key))
+            _key = key.char
+            if _key == 'w':
+                self.key_w = False
+            elif _key == 'a':
+                self.key_a = False
+            elif _key == 's':
+                self.key_s = False
+            elif _key == 'd':
+                self.key_d = False
+            elif _key == 'z':
+                self.key_z = False
+            elif _key == 'x':
+                self.key_x = False
+            elif _key == 'c':
+                self.key_c = False
+            elif _key == 'v':
+                self.key_v = False
+            elif _key == 'g':
+                self.key_g = False
+            elif _key == 'h':
+                self.key_h = False
 
         except AttributeError:
             print('special key {0} pressed'.format(key.char))
@@ -217,14 +243,7 @@ class KeyboardRun:
         return "currently:\tspeed %s\tturn %s " % (speed, turn)
 
 
-
-
-if __name__=="__main__":
+if __name__ == "__main__":
     cfg = dk.load_config()
-    keyboardRun = KeyboardRun() #
+    keyboardRun = KeyboardRun()  #
     keyboardRun.run()
-
-
-
-
-

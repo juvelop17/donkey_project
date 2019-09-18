@@ -48,8 +48,7 @@ from threading import Thread
 
 
 class VoiceRecognition(Thread):
-    prev_text = None
-    curr_text = None
+    status = False
 
     # Audio recording parameters
     RATE = 16000
@@ -58,6 +57,9 @@ class VoiceRecognition(Thread):
     def __init__(self):
         super().__init__()
         self.daemon = True
+
+        self.status = True
+
         # See http://g.co/cloud/speech/docs/languages
         # for a list of supported languages.
         language_code = 'ko-KR'  # a BCP-47 language tag
@@ -100,6 +102,9 @@ class VoiceRecognition(Thread):
         print('listen_print_loop 시작')
         num_chars_printed = 0
         for response in responses:
+            if not self.status:
+                break
+
             #print(response)
             if not response.results:
                 continue
@@ -150,8 +155,11 @@ class VoiceRecognition(Thread):
 
                 num_chars_printed = 0
 
+    def cancel(self, ):
+        self.status = False
+
     def run(self):
-        while True :
+        while self.status :
             with MicrophoneStream(self.RATE, self.CHUNK) as stream:
                 audio_generator = stream.generator()
                 requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audio_generator)
