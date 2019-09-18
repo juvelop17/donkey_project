@@ -219,9 +219,11 @@ class KeyboardRun:
             elif _key == 'h':
                 self.key_h = True
                 if self.voice_status:
+                    print('self.voice_status True -> False')
                     self.voice_status = False
                     self.voiceRecognition.cancel()
                 else:
+                    print('self.voice_status False -> True')
                     self.voice_status = True
                     self.voiceRecognition = VoiceRecognition()
                     self.voiceRecognition.run()

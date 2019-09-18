@@ -157,6 +157,7 @@ class VoiceRecognition(Thread):
                 num_chars_printed = 0
 
     def run(self):
+        print('voice recognition 시작')
         while self.status:
             with MicrophoneStream(self.RATE, self.CHUNK) as stream:
                 audio_generator = stream.generator()
@@ -168,6 +169,7 @@ class VoiceRecognition(Thread):
             time.sleep(1)
 
     def cancel(self):
+        print('voice recognition 종료')
         self.status = False
 
 
