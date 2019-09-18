@@ -15,6 +15,7 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import String
 import donkeycar as dk
 from node_imu_topic_pub import ImuTopicPublisher
+from vacuum import VacuumMortor
 import time
 import threading
 from motor import PCA9685, PWMSteering, PWMThrottle
@@ -24,6 +25,7 @@ class ControlCar():
     controller = None
     isKeyboard = False
     isVoice = False
+    isVacuum = False
 
     voice_speed = 0.2
     voice_turn = 0.8
@@ -120,14 +122,23 @@ class ControlCar():
                 self.throttle.run(self.voice_speed)  # - : backward, + : forward
                 self.steering.run(-self.voice_turn)  # - : left, + : right
 
+            if '청소' in _msg :
+                if self.isVacuum:
+                    self.isVacuum = False
+                    self.vacuumMortor.cancel()
+                else:
+                    self.isVacuum = True
+                    self.vacuumMortor = VacuumMortor()
+                    self.vacuumMortor.run()
+
     def run(self):
         # --- Set the control rate
         rate = rospy.Rate(10)
 
         # run imu node
-        # imuTopicPublisher = ImuTopicPublisher()
-        # imuTopicPublisher.run()
-        # print('imuTopicPublisher',imuTopicPublisher)
+        imuTopicPublisher = ImuTopicPublisher()
+        imuTopicPublisher.run()
+        print('imuTopicPublisher',imuTopicPublisher)
 
         while not rospy.is_shutdown():
             # print('is_controller_connected', self.is_controller_connected)

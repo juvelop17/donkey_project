@@ -31,7 +31,10 @@ from threading import Thread
 
 class ImuTopicPublisher(Thread):
     def __init__(self):
-        super().__init__()
+        Thread.__init__(self)
+        # Thread options
+        self.daemon = True
+
         self.setOffsets()
 
         self.mpu = MPU6050(self.i2c_bus, self.device_address, self.x_accel_offset, self.y_accel_offset,
@@ -60,10 +63,6 @@ class ImuTopicPublisher(Thread):
         self.pub3 = rospy.Publisher('rollpitch', Imu, queue_size=10)
         rospy.init_node(self.frame_name, anonymous=True)
         self.rate = rospy.Rate(10)  # 10hz
-
-        # Thread options
-        self.daemon = True
-        
 
     def setOffsets(self):
         self.i2c_bus = 1
@@ -148,3 +147,6 @@ class ImuTopicPublisher(Thread):
 if __name__ == '__main__':
     imuTopicPublisher = ImuTopicPublisher()
     imuTopicPublisher.run()
+
+    while True:
+        pass

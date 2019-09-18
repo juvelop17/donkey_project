@@ -163,7 +163,8 @@ def listen_print_loop(responses):
 
 
 def main():
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/ubuntu/Desktop/donkey_project/posvacpjt-251711-c6df951f8f17.json"
+    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/ubuntu/Desktop/donkey_project/posvacpjt-251711-c6df951f8f17.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./posvacpjt-251711-c6df951f8f17.json"
 
     # See http://g.co/cloud/speech/docs/languages
     # for a list of supported languages.

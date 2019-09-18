@@ -25,9 +25,6 @@ Example usage:
     python transcribe_streaming_mic.py
 """
 
-
-
-
 # [START speech_transcribe_streaming_mic]
 from __future__ import division
 
@@ -55,7 +52,7 @@ class VoiceRecognition(Thread):
     CHUNK = int(RATE / 10)  # 100ms
 
     def __init__(self):
-        super().__init__()
+        Thread.__init__(self)
         self.daemon = True
 
         self.status = True
@@ -65,12 +62,16 @@ class VoiceRecognition(Thread):
         language_code = 'ko-KR'  # a BCP-47 language tag
 
         # 키파일 등록
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/ubuntu/Desktop/donkey_project/posvacpjt-251711-c6df951f8f17.json"
-        #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./posvacpjt-251711-c6df951f8f17.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./posvacpjt-251711-c6df951f8f17.json"
+        # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/ubuntu/Desktop/donkey_project/posvacpjt-251711-c6df951f8f17.json"
         # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pirl/posvacpjt-251711-c6df951f8f17.json"
         # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pi/posvacpjt-251711-c6df951f8f17.json"
-	
-        rospy.init_node('voice_recognition')
+
+        try:
+            rospy.init_node('voice_recognition')
+        except rospy.exceptions.ROSException as e:
+            print(e)
+
         self.cmd_controller_pub = rospy.Publisher('cmd_controller', String, queue_size=1)
         self.voice_text_pub = rospy.Publisher('voice_text', String, queue_size=1)
         self.cmd_controller_pub.publish('voice')
@@ -105,7 +106,7 @@ class VoiceRecognition(Thread):
             if not self.status:
                 break
 
-            #print(response)
+            # print(response)
             if not response.results:
                 continue
 
@@ -143,8 +144,8 @@ class VoiceRecognition(Thread):
                 # print('self.curr_text',self.curr_text)
 
                 self.cmd_controller_pub.publish('voice')
-                #self.voice_text_pub.publish(transcript.decode('cp949'))
-                #self.voice_text_pub.publish(transcript.encode('utf-8'))
+                # self.voice_text_pub.publish(transcript.decode('cp949'))
+                # self.voice_text_pub.publish(transcript.encode('utf-8'))
                 self.voice_text_pub.publish(transcript)
 
                 # Exit recognition if any of the transcribed phrases could be
@@ -155,25 +156,24 @@ class VoiceRecognition(Thread):
 
                 num_chars_printed = 0
 
-    def cancel(self, ):
-        self.status = False
-
     def run(self):
-        while self.status :
+        while self.status:
             with MicrophoneStream(self.RATE, self.CHUNK) as stream:
                 audio_generator = stream.generator()
                 requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audio_generator)
-
                 responses = self.client.streaming_recognize(self.streaming_config, requests)
 
                 # Now, put the transcription responses to use.
                 self.listen_print_loop(responses)
             time.sleep(1)
 
+    def cancel(self):
+        self.status = False
+
 
 class MicrophoneStream(object):
-
     """Opens a recording stream as a generator yielding the audio chunks."""
+
     def __init__(self, rate, chunk):
         self._rate = rate
         self._chunk = chunk
@@ -240,6 +240,10 @@ class MicrophoneStream(object):
 def main():
     voiceRecognition = VoiceRecognition()
     voiceRecognition.run()
+
+    while True:
+        pass
+
 
 if __name__ == '__main__':
     main()

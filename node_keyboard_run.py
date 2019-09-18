@@ -144,22 +144,22 @@ class KeyboardRun:
                         print(msg)
                     self.status = (self.status + 1) % 15
 
-                elif self.key_g == True:
-                    if self.vacuum_status:
-                        self.vacuum_status = False
-                        self.vacuumMortor.cancel()
-                    else:
-                        self.vacuum_status = True
-                        self.vacuumMortor = VacuumMortor()
-                        self.vacuumMortor.run()
-                elif self.key_h == True:
-                    if self.voice_status:
-                        self.voice_status = False
-                        self.voiceRecognition.cancel()
-                    else:
-                        self.voice_status = True
-                        self.voiceRecognition = VoiceRecognition()
-                        self.voiceRecognition.run()
+                # elif self.key_g == True:
+                #     if self.vacuum_status:
+                #         self.vacuum_status = False
+                #         self.vacuumMortor.cancel()
+                #     else:
+                #         self.vacuum_status = True
+                #         self.vacuumMortor = VacuumMortor()
+                #         self.vacuumMortor.run()
+                # elif self.key_h == True:
+                #     if self.voice_status:
+                #         self.voice_status = False
+                #         self.voiceRecognition.cancel()
+                #     else:
+                #         self.voice_status = True
+                #         self.voiceRecognition = VoiceRecognition()
+                #         self.voiceRecognition.run()
 
                 elif self.key_esc == True:
                     print('exit')
@@ -209,8 +209,22 @@ class KeyboardRun:
                 self.key_v = True
             elif _key == 'g':
                 self.key_g = True
+                if self.vacuum_status:
+                    self.vacuum_status = False
+                    self.vacuumMortor.cancel()
+                else:
+                    self.vacuum_status = True
+                    self.vacuumMortor = VacuumMortor()
+                    self.vacuumMortor.run()
             elif _key == 'h':
                 self.key_h = True
+                if self.voice_status:
+                    self.voice_status = False
+                    self.voiceRecognition.cancel()
+                else:
+                    self.voice_status = True
+                    self.voiceRecognition = VoiceRecognition()
+                    self.voiceRecognition.run()
 
         except AttributeError:
             print('special key {0} pressed'.format(key.char))
